@@ -1,6 +1,6 @@
 {
   "name": "@tensr/sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Plugin SDK for Tensr statistical analysis platform",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
