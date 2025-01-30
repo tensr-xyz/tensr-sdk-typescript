@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import { JSX } from 'react';
 
 /**
  * Supported file types for analysis
@@ -26,7 +26,7 @@ export const ColumnType = {
 export type ColumnType = (typeof ColumnType)[keyof typeof ColumnType];
 
 /**
- * Represents a column in a dataset
+ * Column definition
  * @public
  */
 export interface Column {
@@ -41,7 +41,7 @@ export interface Column {
 }
 
 /**
- * Core dataset that plugins will analyze
+ * Dataset structure for analysis
  * @public
  */
 export interface DataSet {
@@ -60,20 +60,19 @@ export interface DataSet {
 }
 
 /**
- * Result of plugin analysis
+ * Analysis result structure
  * @public
  */
 export interface AnalysisResult {
   /** Analysis output data */
   data: Record<string, unknown>;
-  /** Optional error message */
-  error?: string;
-  /** Optional warning messages */
-  warnings?: string[];
   /** Metadata about the analysis */
   metadata?: {
+    /** Time taken to execute analysis in ms */
     executionTime?: number;
+    /** Number of rows processed */
     processedRows?: number;
+    /** Names of columns that were processed */
     processedColumns?: string[];
   };
 }
@@ -93,10 +92,37 @@ export interface PluginComponentProps {
   className?: string;
 }
 
-export type PluginComponentType = (props: PluginComponentProps) => JSX.Element;
+/**
+ * Plugin category type
+ * @public
+ */
+export type PluginCategory = 'analysis' | 'visualization' | 'export' | 'utility';
 
 /**
- * Plugin configuration derived from package.json
+ * Core plugin interface
+ * @public
+ */
+export interface TensrPlugin {
+  /** Analyze the provided dataset */
+  analyze(data: DataSet): Promise<AnalysisResult> | AnalysisResult;
+  /** React component to display results */
+  Component: (props: PluginComponentProps) => JSX.Element;
+  /** Get plugin name */
+  getName(): string;
+  /** Get plugin version */
+  getVersion(): string;
+  /** Get plugin description */
+  getDescription(): string;
+  /** Get supported file types */
+  getSupportedFileTypes(): FileType[];
+  /** Get plugin category if defined */
+  getCategory(): PluginCategory | null;
+  /** Get plugin tags */
+  getTags(): string[];
+}
+
+/**
+ * Plugin configuration
  * @public
  */
 export interface PluginConfig {
@@ -106,54 +132,10 @@ export interface PluginConfig {
   version: string;
   /** Plugin description */
   description: string;
-  /** Plugin author */
-  author: string;
-  /** Entry point file */
-  main: string;
   /** Supported file types */
   supportedFileTypes: FileType[];
   /** Plugin category */
-  category?: 'analysis' | 'visualization' | 'export' | 'utility';
+  category?: PluginCategory;
   /** Search tags */
   tags?: string[];
 }
-
-/**
- * Options for analysis execution
- * @public
- */
-export interface AnalysisOptions {
-  /** Columns to include in analysis */
-  selectedColumns?: string[];
-  /** Additional parameters */
-  parameters?: Record<string, unknown>;
-}
-
-/**
- * Plugin error with additional context
- * @public
- */
-export class PluginError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public details?: Record<string, unknown>
-  ) {
-    super(message);
-    this.name = 'PluginError';
-  }
-}
-
-/**
- * Common error codes that can be thrown by plugins
- * @public
- */
-export const ErrorCode = {
-  INVALID_DATA: 'INVALID_DATA',
-  UNSUPPORTED_FILE_TYPE: 'UNSUPPORTED_FILE_TYPE',
-  MISSING_REQUIRED_COLUMNS: 'MISSING_REQUIRED_COLUMNS',
-  ANALYSIS_FAILED: 'ANALYSIS_FAILED',
-  VALIDATION_ERROR: 'VALIDATION_ERROR',
-} as const;
-
-export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
