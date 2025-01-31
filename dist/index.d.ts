@@ -26,7 +26,7 @@ declare const ColumnType: {
 };
 type ColumnType = (typeof ColumnType)[keyof typeof ColumnType];
 /**
- * Represents a column in a dataset
+ * Column definition
  * @public
  */
 interface Column {
@@ -40,7 +40,7 @@ interface Column {
     metadata?: Record<string, unknown>;
 }
 /**
- * Core dataset that plugins will analyze
+ * Dataset structure for analysis
  * @public
  */
 interface DataSet {
@@ -58,20 +58,19 @@ interface DataSet {
     metadata?: Record<string, unknown>;
 }
 /**
- * Result of plugin analysis
+ * Analysis result structure
  * @public
  */
 interface AnalysisResult {
     /** Analysis output data */
     data: Record<string, unknown>;
-    /** Optional error message */
-    error?: string;
-    /** Optional warning messages */
-    warnings?: string[];
     /** Metadata about the analysis */
     metadata?: {
+        /** Time taken to execute analysis in ms */
         executionTime?: number;
+        /** Number of rows processed */
         processedRows?: number;
+        /** Names of columns that were processed */
         processedColumns?: string[];
     };
 }
@@ -89,9 +88,35 @@ interface PluginComponentProps {
     /** Optional className for styling */
     className?: string;
 }
-type PluginComponentType = (props: PluginComponentProps) => JSX.Element;
 /**
- * Plugin configuration derived from package.json
+ * Plugin category type
+ * @public
+ */
+type PluginCategory = 'analysis' | 'visualization' | 'export' | 'utility';
+/**
+ * Core plugin interface
+ * @public
+ */
+interface TensrPlugin {
+    /** Analyze the provided dataset */
+    analyze(data: DataSet): Promise<AnalysisResult> | AnalysisResult;
+    /** React component to display results */
+    Component: (props: PluginComponentProps) => JSX.Element;
+    /** Get plugin name */
+    getName(): string;
+    /** Get plugin version */
+    getVersion(): string;
+    /** Get plugin description */
+    getDescription(): string;
+    /** Get supported file types */
+    getSupportedFileTypes(): FileType[];
+    /** Get plugin category if defined */
+    getCategory(): PluginCategory | null;
+    /** Get plugin tags */
+    getTags(): string[];
+}
+/**
+ * Plugin configuration
  * @public
  */
 interface PluginConfig {
@@ -101,38 +126,57 @@ interface PluginConfig {
     version: string;
     /** Plugin description */
     description: string;
-    /** Plugin author */
-    author: string;
-    /** Entry point file */
-    main: string;
     /** Supported file types */
     supportedFileTypes: FileType[];
     /** Plugin category */
-    category?: 'analysis' | 'visualization' | 'export' | 'utility';
+    category?: PluginCategory;
     /** Search tags */
     tags?: string[];
 }
+
 /**
- * Options for analysis execution
+ * Creates a new plugin instance
+ * @param config - Plugin configuration
+ * @returns Plugin instance
  * @public
  */
-interface AnalysisOptions {
-    /** Columns to include in analysis */
-    selectedColumns?: string[];
-    /** Additional parameters */
-    parameters?: Record<string, unknown>;
-}
+declare function createPlugin(config: PluginConfig): TensrPlugin;
+
+declare function cn(...inputs: ClassValue[]): string;
+
 /**
- * Plugin error with additional context
+ * Validates a dataset before analysis
+ * @param data - Dataset to validate
+ * @param supportedTypes - Supported file types
+ * @throws {PluginError} When validation fails
  * @public
  */
-declare class PluginError extends Error {
-    code: string;
-    details?: Record<string, unknown> | undefined;
-    constructor(message: string, code: string, details?: Record<string, unknown> | undefined);
-}
+declare function validateDataSet(data: DataSet, supportedTypes: FileType[]): void;
 /**
- * Common error codes that can be thrown by plugins
+ * Utility functions for data analysis
+ * @public
+ */
+declare const utils: {
+    /**
+     * Check if a value is numeric
+     */
+    isNumeric(value: unknown): boolean;
+    /**
+     * Convert value to number
+     */
+    toNumber(value: unknown): number;
+    /**
+     * Calculate mean of values
+     */
+    calculateMean(values: number[]): number;
+    /**
+     * Get numeric columns from dataset
+     */
+    getNumericColumns(data: DataSet): Column[];
+};
+
+/**
+ * Error codes for plugin operations
  * @public
  */
 declare const ErrorCode: {
@@ -140,89 +184,16 @@ declare const ErrorCode: {
     readonly UNSUPPORTED_FILE_TYPE: "UNSUPPORTED_FILE_TYPE";
     readonly MISSING_REQUIRED_COLUMNS: "MISSING_REQUIRED_COLUMNS";
     readonly ANALYSIS_FAILED: "ANALYSIS_FAILED";
-    readonly VALIDATION_ERROR: "VALIDATION_ERROR";
 };
 type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
-
 /**
- * Base class for all plugins
+ * Custom error class for plugin operations
  * @public
  */
-declare abstract class Plugin {
-    protected config: PluginConfig;
-    constructor(config: PluginConfig);
-    /**
-     * Analyze the provided dataset
-     * @param data - Dataset to analyze
-     * @param options - Optional analysis configuration
-     * @throws {PluginError} When analysis fails
-     */
-    abstract analyze(data: DataSet, options?: AnalysisOptions): Promise<AnalysisResult>;
-    /**
-     * React component to display analysis results
-     */
-    abstract get Component(): PluginComponentType;
-    /**
-     * Get plugin identifier
-     */
-    getId(): string;
-    /**
-     * Get plugin display name
-     */
-    getName(): string;
-    /**
-     * Get plugin description
-     */
-    getDescription(): string;
-    /**
-     * Check if plugin supports given file type
-     */
-    supportsFileType(fileType: FileType): boolean;
-    /**
-     * Get supported file types
-     */
-    getSupportedFileTypes(): FileType[];
-    /**
-     * Validate dataset before analysis
-     * @throws {PluginError} When validation fails
-     */
-    protected validateDataSet(data: DataSet): void;
-    private validateConfig;
+declare class PluginError extends Error {
+    code: ErrorCode;
+    details?: Record<string, unknown> | undefined;
+    constructor(message: string, code: ErrorCode, details?: Record<string, unknown> | undefined);
 }
-/**
- * Registry for managing plugins
- * @public
- */
-declare class PluginRegistry {
-    private plugins;
-    /**
-     * Register a new plugin
-     * @throws {Error} If plugin is already registered
-     */
-    registerPlugin(plugin: Plugin): void;
-    /**
-     * Unregister a plugin
-     */
-    unregisterPlugin(id: string): void;
-    /**
-     * Get a plugin by ID
-     */
-    getPlugin(id: string): Plugin | undefined;
-    /**
-     * Get all plugins that support a specific file type
-     */
-    getPluginsForFileType(fileType: FileType): Plugin[];
-    /**
-     * Get all registered plugins
-     */
-    getAllPlugins(): Plugin[];
-}
-/**
- * Execute plugin analysis with validation and error handling
- * @public
- */
-declare function executePluginAnalysis(plugin: Plugin, data: DataSet, options?: AnalysisOptions): Promise<AnalysisResult>;
 
-declare function cn(...inputs: ClassValue[]): string;
-
-export { type AnalysisOptions, type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, Plugin, type PluginComponentProps, type PluginComponentType, type PluginConfig, PluginError, PluginRegistry, cn, executePluginAnalysis };
+export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginCategory, type PluginComponentProps, type PluginConfig, PluginError, type TensrPlugin, cn, createPlugin, utils, validateDataSet };

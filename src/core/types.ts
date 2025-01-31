@@ -120,22 +120,3 @@ export interface TensrPlugin {
   /** Get plugin tags */
   getTags(): string[];
 }
-
-/**
- * Plugin configuration
- * @public
- */
-export interface PluginConfig {
-  /** Plugin name */
-  name: string;
-  /** Plugin version */
-  version: string;
-  /** Plugin description */
-  description: string;
-  /** Supported file types */
-  supportedFileTypes: FileType[];
-  /** Plugin category */
-  category?: PluginCategory;
-  /** Search tags */
-  tags?: string[];
-}
