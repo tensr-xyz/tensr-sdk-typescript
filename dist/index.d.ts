@@ -115,32 +115,6 @@ interface TensrPlugin {
     /** Get plugin tags */
     getTags(): string[];
 }
-/**
- * Plugin configuration
- * @public
- */
-interface PluginConfig {
-    /** Plugin name */
-    name: string;
-    /** Plugin version */
-    version: string;
-    /** Plugin description */
-    description: string;
-    /** Supported file types */
-    supportedFileTypes: FileType[];
-    /** Plugin category */
-    category?: PluginCategory;
-    /** Search tags */
-    tags?: string[];
-}
-
-/**
- * Creates a new plugin instance
- * @param config - Plugin configuration
- * @returns Plugin instance
- * @public
- */
-declare function createPlugin(config: PluginConfig): TensrPlugin;
 
 declare function cn(...inputs: ClassValue[]): string;
 
@@ -196,4 +170,4 @@ declare class PluginError extends Error {
     constructor(message: string, code: ErrorCode, details?: Record<string, unknown> | undefined);
 }
 
-export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginCategory, type PluginComponentProps, type PluginConfig, PluginError, type TensrPlugin, cn, createPlugin, utils, validateDataSet };
+export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginCategory, type PluginComponentProps, PluginError, type TensrPlugin, cn, utils, validateDataSet };

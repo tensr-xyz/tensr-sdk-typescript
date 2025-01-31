@@ -77,25 +77,6 @@ var ColumnType = {
   DATE: "date"
 };
 
-// src/core/plugin.ts
-function createPlugin(config) {
-  return {
-    getName: () => config.name,
-    getVersion: () => config.version,
-    getDescription: () => config.description,
-    getSupportedFileTypes: () => config.supportedFileTypes,
-    getCategory: () => config.category || null,
-    getTags: () => config.tags || [],
-    analyze: function(data) {
-      validateDataSet(data, config.supportedFileTypes);
-      throw new Error("analyze() must be implemented");
-    },
-    Component: function(_props) {
-      throw new Error("Component() must be implemented");
-    }
-  };
-}
-
-export { ColumnType, ErrorCode, FileType, PluginError, createPlugin, utils, validateDataSet };
+export { ColumnType, ErrorCode, FileType, PluginError, utils, validateDataSet };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

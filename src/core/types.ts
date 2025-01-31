@@ -93,12 +93,6 @@ export interface PluginComponentProps {
 }
 
 /**
- * Plugin category type
- * @public
- */
-export type PluginCategory = 'analysis' | 'visualization' | 'export' | 'utility';
-
-/**
  * Core plugin interface
  * @public
  */
@@ -106,17 +100,5 @@ export interface TensrPlugin {
   /** Analyze the provided dataset */
   analyze(data: DataSet): Promise<AnalysisResult> | AnalysisResult;
   /** React component to display results */
-  Component: (props: PluginComponentProps) => JSX.Element;
-  /** Get plugin name */
-  getName(): string;
-  /** Get plugin version */
-  getVersion(): string;
-  /** Get plugin description */
-  getDescription(): string;
-  /** Get supported file types */
-  getSupportedFileTypes(): FileType[];
-  /** Get plugin category if defined */
-  getCategory(): PluginCategory | null;
-  /** Get plugin tags */
-  getTags(): string[];
+  Component(props: PluginComponentProps): JSX.Element;
 }

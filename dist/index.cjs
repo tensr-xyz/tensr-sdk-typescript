@@ -79,25 +79,6 @@ var ColumnType = {
   DATE: "date"
 };
 
-// src/core/plugin.ts
-function createPlugin(config) {
-  return {
-    getName: () => config.name,
-    getVersion: () => config.version,
-    getDescription: () => config.description,
-    getSupportedFileTypes: () => config.supportedFileTypes,
-    getCategory: () => config.category || null,
-    getTags: () => config.tags || [],
-    analyze: function(data) {
-      validateDataSet(data, config.supportedFileTypes);
-      throw new Error("analyze() must be implemented");
-    },
-    Component: function(_props) {
-      throw new Error("Component() must be implemented");
-    }
-  };
-}
-
 Object.defineProperty(exports, "Dialog", {
   enumerable: true,
   get: function () { return chunkHZGV5JBS_cjs.Dialog; }
@@ -146,7 +127,6 @@ exports.ColumnType = ColumnType;
 exports.ErrorCode = ErrorCode;
 exports.FileType = FileType;
 exports.PluginError = PluginError;
-exports.createPlugin = createPlugin;
 exports.utils = utils;
 exports.validateDataSet = validateDataSet;
 //# sourceMappingURL=index.cjs.map
