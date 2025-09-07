@@ -1,7 +1,6 @@
 import { DataSet, AnalysisResult, TensrPlugin } from './types';
 import { 
   TensrPluginManifest, 
-  PluginExecutionResult,
   PluginValidationResult
 } from './plugin-manifest';
 
@@ -114,26 +113,6 @@ export class PluginExecutor {
     };
   }
 
-  /**
-   * Get memory usage (placeholder implementation)
-   */
-  private getMemoryUsage(): number {
-    // In a real implementation, this would measure actual memory usage
-    return 0;
-  }
-
-  /**
-   * Get execution warnings
-   */
-  private getWarnings(): string[] {
-    const warnings: string[] = [];
-    
-    if (this.error) {
-      warnings.push(`Plugin execution completed with errors: ${this.error.message}`);
-    }
-
-    return warnings;
-  }
 }
 
 /**

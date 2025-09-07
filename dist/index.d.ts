@@ -189,6 +189,11 @@ interface PluginValidationResult {
     /** Validation warnings */
     warnings: string[];
 }
+/**
+ * Validate a plugin manifest
+ * @public
+ */
+declare function validatePluginManifest(manifest: TensrPluginManifest): PluginValidationResult;
 
 /**
  * Plugin executor for running Tensr plugins in a sandboxed environment
@@ -201,19 +206,16 @@ declare class PluginExecutor {
     /**
      * Execute a plugin with given data and UI parameters
      */
-    executePlugin(plugin: TensrPlugin, _manifest: TensrPluginManifest, data: DataSet, _uiData?: Record<string, unknown>): Promise<PluginExecutionResult>;
+    executePlugin(plugin: TensrPlugin, _manifest: TensrPluginManifest, data: DataSet, _uiData?: Record<string, unknown>, timeoutMs?: number): Promise<{
+        success: boolean;
+        result?: AnalysisResult;
+        error?: Error;
+        executionTime: number;
+    }>;
     /**
      * Validate a plugin manifest
      */
     validateManifest(manifest: TensrPluginManifest): PluginValidationResult;
-    /**
-     * Get memory usage (placeholder implementation)
-     */
-    private getMemoryUsage;
-    /**
-     * Get execution warnings
-     */
-    private getWarnings;
 }
 /**
  * Create a plugin from manifest and code
@@ -301,4 +303,4 @@ declare class PluginError extends Error {
     constructor(message: string, code: ErrorCode, details?: Record<string, unknown> | undefined);
 }
 
-export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginComponentProps, PluginError, type PluginExecutionContext, type PluginExecutionResult, PluginExecutor, type PluginValidationResult, type TensrPlugin, type TensrPluginManifest, basicStatsTemplate, cn, correlationTemplate, createPlugin, getPluginTemplate, getPluginTemplates, utils, validateDataSet, visualizationTemplate };
+export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginComponentProps, PluginError, type PluginExecutionContext, type PluginExecutionResult, PluginExecutor, type PluginValidationResult, type TensrPlugin, type TensrPluginManifest, basicStatsTemplate, cn, correlationTemplate, createPlugin, getPluginTemplate, getPluginTemplates, utils, validateDataSet, validatePluginManifest, visualizationTemplate };

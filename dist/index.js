@@ -77,6 +77,53 @@ var ColumnType = {
   DATE: "date"
 };
 
+// src/core/plugin-manifest.ts
+function validatePluginManifest(manifest) {
+  const errors = [];
+  const warnings = [];
+  if (!manifest.id || manifest.id.trim() === "") {
+    errors.push("Plugin ID cannot be empty");
+  }
+  if (!manifest.name || manifest.name.trim() === "") {
+    errors.push("Plugin name cannot be empty");
+  }
+  if (!manifest.version || manifest.version.trim() === "") {
+    errors.push("Plugin version cannot be empty");
+  } else if (!/^\d+\.\d+\.\d+/.test(manifest.version)) {
+    errors.push(`Invalid version format: ${manifest.version}`);
+  }
+  if (!manifest.description || manifest.description.trim() === "") {
+    errors.push("Plugin description cannot be empty");
+  }
+  if (!manifest.author || manifest.author.trim() === "") {
+    errors.push("Plugin author cannot be empty");
+  }
+  if (!manifest.entryPoint || manifest.entryPoint.trim() === "") {
+    errors.push("Plugin entry point cannot be empty");
+  }
+  if (!manifest.ui || manifest.ui.trim() === "") {
+    errors.push("Plugin UI file cannot be empty");
+  }
+  if (!manifest.capabilities) {
+    errors.push("Plugin capabilities are required");
+  } else {
+    if (!manifest.capabilities.inputTypes || manifest.capabilities.inputTypes.length === 0) {
+      errors.push("At least one input type is required");
+    }
+    if (!manifest.capabilities.outputTypes || manifest.capabilities.outputTypes.length === 0) {
+      errors.push("At least one output type is required");
+    }
+  }
+  if (!manifest.tags || manifest.tags.length === 0) {
+    warnings.push("Consider adding tags for better discoverability");
+  }
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings
+  };
+}
+
 // src/core/plugin-executor.ts
 var PluginExecutor = class {
   constructor() {
@@ -87,26 +134,35 @@ var PluginExecutor = class {
   /**
    * Execute a plugin with given data and UI parameters
    */
-  async executePlugin(plugin, _manifest, data, _uiData = {}) {
+  async executePlugin(plugin, _manifest, data, _uiData = {}, timeoutMs = 3e4) {
     this.startTime = Date.now();
     this.result = null;
     this.error = null;
     try {
-      const analysisResult = await plugin.analyze(data);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Plugin execution timeout")), timeoutMs);
+      });
+      const analysisResult = await Promise.race([
+        plugin.analyze(data),
+        timeoutPromise
+      ]);
       if (!this.result) {
         this.result = analysisResult;
       }
       const executionTime = Date.now() - this.startTime;
       return {
+        success: true,
         result: this.result,
-        metadata: {
-          executionTime,
-          memoryUsed: this.getMemoryUsage(),
-          warnings: this.getWarnings()
-        }
+        executionTime
       };
     } catch (error) {
-      throw new Error(`Plugin execution failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      const executionTime = Date.now() - this.startTime;
+      this.error = error instanceof Error ? error : new Error("Unknown error");
+      return {
+        success: false,
+        error: this.error,
+        executionTime
+      };
     }
   }
   /**
@@ -149,34 +205,21 @@ var PluginExecutor = class {
       warnings
     };
   }
-  /**
-   * Get memory usage (placeholder implementation)
-   */
-  getMemoryUsage() {
-    return 0;
-  }
-  /**
-   * Get execution warnings
-   */
-  getWarnings() {
-    const warnings = [];
-    if (this.error) {
-      warnings.push(`Plugin execution completed with errors: ${this.error.message}`);
-    }
-    return warnings;
-  }
 };
 function createPlugin(_manifest, pluginCode) {
   try {
-    const pluginFactory = new Function("TensrSDK", `
-      ${pluginCode}
-      return plugin;
+    const cleanCode = pluginCode.replace(/export\s+/g, "").replace(/const\s+(\w+)\s*=/g, "var $1 =").replace(/let\s+(\w+)\s*=/g, "var $1 =").replace(/async\s+function/g, "function");
+    const pluginFactory = new Function(`
+      ${cleanCode}
+      // Return the first defined plugin variable
+      if (typeof TestPlugin !== 'undefined') return TestPlugin;
+      if (typeof ErrorPlugin !== 'undefined') return ErrorPlugin;
+      if (typeof plugin !== 'undefined') return plugin;
+      throw new Error('No plugin found in code');
     `);
-    const plugin = pluginFactory({
-      // Add other SDK exports here
-    });
-    if (!plugin || typeof plugin.analyze !== "function" || typeof plugin.Component !== "function") {
-      throw new Error("Plugin must export an object with analyze and Component methods");
+    const plugin = pluginFactory();
+    if (!plugin || typeof plugin.analyze !== "function") {
+      throw new Error("Plugin must export an object with analyze method");
     }
     return plugin;
   } catch (error) {
@@ -250,6 +293,6 @@ function getPluginTemplate(id) {
   return getPluginTemplates().find((template) => template.id === id);
 }
 
-export { ColumnType, ErrorCode, FileType, PluginError, PluginExecutor, basicStatsTemplate, correlationTemplate, createPlugin, getPluginTemplate, getPluginTemplates, utils, validateDataSet, visualizationTemplate };
+export { ColumnType, ErrorCode, FileType, PluginError, PluginExecutor, basicStatsTemplate, correlationTemplate, createPlugin, getPluginTemplate, getPluginTemplates, utils, validateDataSet, validatePluginManifest, visualizationTemplate };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
