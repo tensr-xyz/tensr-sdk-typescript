@@ -1,4 +1,4 @@
-export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger } from './components/index.cjs';
+export { Chart, ChartData, ChartProps, DataTable, DataTableProps, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger } from './components/index.cjs';
 import { JSX } from 'react';
 import { ClassValue } from 'clsx';
 import 'react/jsx-runtime';
@@ -89,11 +89,6 @@ interface PluginComponentProps {
     className?: string;
 }
 /**
- * Plugin category type
- * @public
- */
-type PluginCategory = 'analysis' | 'visualization' | 'export' | 'utility';
-/**
  * Core plugin interface
  * @public
  */
@@ -101,20 +96,156 @@ interface TensrPlugin {
     /** Analyze the provided dataset */
     analyze(data: DataSet): Promise<AnalysisResult> | AnalysisResult;
     /** React component to display results */
-    Component: (props: PluginComponentProps) => JSX.Element;
-    /** Get plugin name */
-    getName(): string;
-    /** Get plugin version */
-    getVersion(): string;
-    /** Get plugin description */
-    getDescription(): string;
-    /** Get supported file types */
-    getSupportedFileTypes(): FileType[];
-    /** Get plugin category if defined */
-    getCategory(): PluginCategory | null;
-    /** Get plugin tags */
-    getTags(): string[];
+    Component(props: PluginComponentProps): JSX.Element;
 }
+
+/**
+ * Plugin manifest structure for Tensr plugins
+ * @public
+ */
+interface TensrPluginManifest {
+    /** Unique plugin identifier */
+    id: string;
+    /** Plugin name */
+    name: string;
+    /** Plugin version */
+    version: string;
+    /** Plugin description */
+    description: string;
+    /** Plugin author */
+    author: string;
+    /** Author email */
+    authorEmail?: string;
+    /** Plugin entry point file */
+    entryPoint: string;
+    /** UI file path */
+    ui: string;
+    /** Plugin capabilities */
+    capabilities: {
+        /** Supported input data types */
+        inputTypes: string[];
+        /** Supported output formats */
+        outputTypes: string[];
+    };
+    /** Plugin configuration */
+    config?: {
+        /** Execution timeout in seconds */
+        timeout?: number;
+        /** Maximum memory usage in MB */
+        maxMemory?: number;
+        /** Maximum concurrency */
+        concurrency?: number;
+    };
+    /** Plugin tags for categorization */
+    tags?: string[];
+    /** Plugin icon URL */
+    icon?: string;
+    /** Plugin license */
+    license?: string;
+    /** Plugin homepage URL */
+    homepage?: string;
+    /** Plugin repository URL */
+    repository?: string;
+}
+/**
+ * Plugin execution context
+ * @public
+ */
+interface PluginExecutionContext {
+    /** Input dataset */
+    data: DataSet;
+    /** UI parameters from user */
+    uiData: Record<string, unknown>;
+    /** Plugin manifest */
+    manifest: TensrPluginManifest;
+    /** Result callback */
+    setResult: (result: AnalysisResult) => void;
+    /** Error callback */
+    setError: (error: Error) => void;
+}
+/**
+ * Plugin execution result
+ * @public
+ */
+interface PluginExecutionResult {
+    /** Analysis result */
+    result: AnalysisResult;
+    /** Execution metadata */
+    metadata: {
+        executionTime: number;
+        memoryUsed: number;
+        warnings?: string[];
+    };
+}
+/**
+ * Plugin validation result
+ * @public
+ */
+interface PluginValidationResult {
+    /** Whether plugin is valid */
+    isValid: boolean;
+    /** Validation errors */
+    errors: string[];
+    /** Validation warnings */
+    warnings: string[];
+}
+
+/**
+ * Plugin executor for running Tensr plugins in a sandboxed environment
+ * @public
+ */
+declare class PluginExecutor {
+    private result;
+    private error;
+    private startTime;
+    /**
+     * Execute a plugin with given data and UI parameters
+     */
+    executePlugin(plugin: TensrPlugin, _manifest: TensrPluginManifest, data: DataSet, _uiData?: Record<string, unknown>): Promise<PluginExecutionResult>;
+    /**
+     * Validate a plugin manifest
+     */
+    validateManifest(manifest: TensrPluginManifest): PluginValidationResult;
+    /**
+     * Get memory usage (placeholder implementation)
+     */
+    private getMemoryUsage;
+    /**
+     * Get execution warnings
+     */
+    private getWarnings;
+}
+/**
+ * Create a plugin from manifest and code
+ * @public
+ */
+declare function createPlugin(_manifest: TensrPluginManifest, pluginCode: string): TensrPlugin;
+
+/**
+ * Plugin template for basic statistical analysis
+ * @public
+ */
+declare const basicStatsTemplate: TensrPluginManifest;
+/**
+ * Plugin template for correlation analysis
+ * @public
+ */
+declare const correlationTemplate: TensrPluginManifest;
+/**
+ * Plugin template for data visualization
+ * @public
+ */
+declare const visualizationTemplate: TensrPluginManifest;
+/**
+ * Get all available plugin templates
+ * @public
+ */
+declare function getPluginTemplates(): TensrPluginManifest[];
+/**
+ * Get plugin template by ID
+ * @public
+ */
+declare function getPluginTemplate(id: string): TensrPluginManifest | undefined;
 
 declare function cn(...inputs: ClassValue[]): string;
 
@@ -170,4 +301,4 @@ declare class PluginError extends Error {
     constructor(message: string, code: ErrorCode, details?: Record<string, unknown> | undefined);
 }
 
-export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginCategory, type PluginComponentProps, PluginError, type TensrPlugin, cn, utils, validateDataSet };
+export { type AnalysisResult, type Column, ColumnType, type DataSet, ErrorCode, FileType, type PluginComponentProps, PluginError, type PluginExecutionContext, type PluginExecutionResult, PluginExecutor, type PluginValidationResult, type TensrPlugin, type TensrPluginManifest, basicStatsTemplate, cn, correlationTemplate, createPlugin, getPluginTemplate, getPluginTemplates, utils, validateDataSet, visualizationTemplate };

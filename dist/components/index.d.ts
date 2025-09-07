@@ -19,4 +19,31 @@ declare const DialogFooter: {
 declare const DialogTitle: React.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogTitleProps & React.RefAttributes<HTMLHeadingElement>, "ref"> & React.RefAttributes<HTMLHeadingElement>>;
 declare const DialogDescription: React.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogDescriptionProps & React.RefAttributes<HTMLParagraphElement>, "ref"> & React.RefAttributes<HTMLParagraphElement>>;
 
-export { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger };
+interface DataTableProps {
+    data: Record<string, unknown>[];
+    columns?: string[];
+    className?: string;
+    maxRows?: number;
+}
+declare const DataTable: React.FC<DataTableProps>;
+
+interface ChartData {
+    labels: string[];
+    datasets: {
+        label: string;
+        data: number[];
+        backgroundColor?: string;
+        borderColor?: string;
+    }[];
+}
+interface ChartProps {
+    data: ChartData;
+    type: 'bar' | 'line' | 'scatter';
+    title?: string;
+    className?: string;
+    width?: number;
+    height?: number;
+}
+declare const Chart: React.FC<ChartProps>;
+
+export { Chart, type ChartData, type ChartProps, DataTable, type DataTableProps, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger };

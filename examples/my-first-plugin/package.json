@@ -1,0 +1,30 @@
+{
+  "name": "my-first-plugin",
+  "version": "1.0.0",
+  "description": "A simple statistical analysis plugin built with Tensr SDK",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@tensr/sdk": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0"
+  },
+  "keywords": [
+    "tensr",
+    "plugin",
+    "statistics",
+    "analysis"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT"
+}

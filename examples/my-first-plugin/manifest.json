@@ -1,0 +1,23 @@
+{
+  "id": "my-first-plugin",
+  "name": "My First Plugin",
+  "version": "1.0.0",
+  "description": "A simple statistical analysis plugin that calculates basic metrics",
+  "author": "Your Name",
+  "authorEmail": "your.email@example.com",
+  "entryPoint": "dist/index.js",
+  "ui": "ui.html",
+  "capabilities": {
+    "inputTypes": ["csv", "xlsx"],
+    "outputTypes": ["table", "chart"]
+  },
+  "config": {
+    "timeout": 30,
+    "maxMemory": 100
+  },
+  "tags": ["statistics", "descriptive", "beginner"],
+  "icon": "https://example.com/icon.png",
+  "license": "MIT",
+  "homepage": "https://github.com/yourusername/my-first-plugin",
+  "repository": "https://github.com/yourusername/my-first-plugin"
+}
